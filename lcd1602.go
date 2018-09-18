@@ -297,6 +297,14 @@ func (a *AdafruitCharlcd) pulseEnable() {
 	time.Sleep(time.Microsecond) //commands need > 37us to settle
 }
 
+func (a *AdafruitCharlcd) Close() {
+	a.e_Pin.Close()
+	a.rs_Pin.Close()
+	for _, pin := range a.db_Pins {
+		pin.Close()
+	}
+}
+
 func (a *AdafruitCharlcd) Message(text string) {
 	//Send string to LCD. Newline wraps to second line
 	for _, char := range []byte(text) {

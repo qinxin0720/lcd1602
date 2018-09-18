@@ -35,6 +35,7 @@ import (
 
 func main() {
     lcd := lcd1602.NewAdafruitCharlcd(14, 15, [4]int{17, 18, 27, 22})
+    defer lcd.Close()
     lcd.Init()
     lcd.Clear()
     lcd.Message(" LCD 1602 Test \n123456789ABCDEF")
