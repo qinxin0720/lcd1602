@@ -2,9 +2,10 @@ package lcd1602
 
 import (
 	"fmt"
-	"github.com/qinxin0720/go-rpigpio"
 	"log"
 	"time"
+
+	"github.com/qinxin0720/go-rpigpio"
 )
 
 type AdafruitCharlcd struct {
@@ -66,7 +67,7 @@ type AdafruitCharlcd struct {
 	row_offsets [4]byte
 }
 
-func newAdafruitCharlcd(pin_rs, pin_e int, pins_db [4]int) *AdafruitCharlcd {
+func NewAdafruitCharlcd(pin_rs, pin_e int, pins_db [4]int) *AdafruitCharlcd {
 	return &AdafruitCharlcd{
 		//commands
 		LCD_CLEARDISPLAY:   0x01,
@@ -127,7 +128,7 @@ func newAdafruitCharlcd(pin_rs, pin_e int, pins_db [4]int) *AdafruitCharlcd {
 	}
 }
 
-func (a *AdafruitCharlcd) init() {
+func (a *AdafruitCharlcd) Init() {
 	var err error
 	a.e_Pin, err = rpi.OpenPin(a.pin_e, rpi.OUT)
 	if err != nil {
@@ -159,10 +160,10 @@ func (a *AdafruitCharlcd) init() {
 	a.displaymode = a.LCD_ENTRYLEFT | a.LCD_ENTRYSHIFTDECREMENT
 	a.write4bits(a.LCD_ENTRYMODESET|a.displaymode, rpi.LOW) //set the entry mode
 
-	a.clear()
+	a.Clear()
 }
 
-func (a *AdafruitCharlcd) begin(cols, lines int) {
+func (a *AdafruitCharlcd) Begin(cols, lines int) {
 	if lines > 1 {
 		a.numlines = lines
 		a.displayfunction |= a.LCD_2LINE
@@ -170,17 +171,17 @@ func (a *AdafruitCharlcd) begin(cols, lines int) {
 	}
 }
 
-func (a *AdafruitCharlcd) home() {
+func (a *AdafruitCharlcd) Home() {
 	a.write4bits(a.LCD_RETURNHOME, rpi.LOW) //set cursor position to zero
 	time.Sleep(3000 * time.Microsecond)     //this command takes a long time!
 }
 
-func (a *AdafruitCharlcd) clear() {
+func (a *AdafruitCharlcd) Clear() {
 	a.write4bits(a.LCD_CLEARDISPLAY, rpi.LOW) //command to clear display
 	time.Sleep(3000 * time.Microsecond)       //3000 microsecond sleep, clearing the display takes a long time
 }
 
-func (a *AdafruitCharlcd) setCursor(col, row int) {
+func (a *AdafruitCharlcd) SetCursor(col, row int) {
 	a.row_offsets = [4]byte{0x00, 0x40, 0x14, 0x54}
 
 	if row > a.numlines {
@@ -190,31 +191,31 @@ func (a *AdafruitCharlcd) setCursor(col, row int) {
 	a.write4bits(a.LCD_SETDDRAMADDR|byte(col+int(a.row_offsets[row])), rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) noDisplay() {
+func (a *AdafruitCharlcd) NoDisplay() {
 	//Turn the display off (quickly)
 	a.displaycontrol &= ^a.LCD_DISPLAYON
 	a.write4bits(a.LCD_DISPLAYCONTROL|a.displaycontrol, rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) display() {
+func (a *AdafruitCharlcd) Display() {
 	//Turn the display on (quickly)
 	a.displaycontrol |= a.LCD_DISPLAYON
 	a.write4bits(a.LCD_DISPLAYCONTROL|a.displaycontrol, rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) noCursor() {
+func (a *AdafruitCharlcd) NoCursor() {
 	//Turns the underline cursor on/off
 	a.displaycontrol &= ^a.LCD_CURSORON
 	a.write4bits(a.LCD_DISPLAYCONTROL|a.displaycontrol, rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) cursor() {
+func (a *AdafruitCharlcd) Cursor() {
 	//Cursor On
 	a.displaycontrol |= a.LCD_CURSORON
 	a.write4bits(a.LCD_DISPLAYCONTROL|a.displaycontrol, rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) noBlink() {
+func (a *AdafruitCharlcd) NoBlink() {
 	//Turn on and off the blinking cursor
 	a.displaycontrol &= ^a.LCD_BLINKON
 	a.write4bits(a.LCD_DISPLAYCONTROL|a.displaycontrol, rpi.LOW)
@@ -225,30 +226,30 @@ func (a *AdafruitCharlcd) DisplayLeft() {
 	a.write4bits(a.LCD_CURSORSHIFT|a.LCD_DISPLAYMOVE|a.LCD_MOVELEFT, rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) scrollDisplayRight() {
+func (a *AdafruitCharlcd) ScrollDisplayRight() {
 	//These commands scroll the display without changing the RAM
 	a.write4bits(a.LCD_CURSORSHIFT|a.LCD_DISPLAYMOVE|a.LCD_MOVERIGHT, rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) leftToRight() {
+func (a *AdafruitCharlcd) LeftToRight() {
 	//This is for text that flows Left to Right
 	a.displaymode |= a.LCD_ENTRYLEFT
 	a.write4bits(a.LCD_ENTRYMODESET|a.displaymode, rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) rightToLeft() {
+func (a *AdafruitCharlcd) RightToLeft() {
 	//This is for text that flows Right to Left
 	a.displaymode &= ^a.LCD_ENTRYLEFT
 	a.write4bits(a.LCD_ENTRYMODESET|a.displaymode, rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) autoscroll() {
+func (a *AdafruitCharlcd) Autoscroll() {
 	//This will 'right justify' text from the cursor
 	a.displaymode |= a.LCD_ENTRYSHIFTINCREMENT
 	a.write4bits(a.LCD_ENTRYMODESET|a.displaymode, rpi.LOW)
 }
 
-func (a *AdafruitCharlcd) noAutoscroll() {
+func (a *AdafruitCharlcd) NoAutoscroll() {
 	//This will 'left justify' text from the cursor
 	a.displaymode &= ^a.LCD_ENTRYSHIFTINCREMENT
 	a.write4bits(a.LCD_ENTRYMODESET|a.displaymode, rpi.LOW)
@@ -296,7 +297,7 @@ func (a *AdafruitCharlcd) pulseEnable() {
 	time.Sleep(time.Microsecond) //commands need > 37us to settle
 }
 
-func (a *AdafruitCharlcd) message(text string) {
+func (a *AdafruitCharlcd) Message(text string) {
 	//Send string to LCD. Newline wraps to second line
 	for _, char := range []byte(text) {
 		if char == '\n' {
